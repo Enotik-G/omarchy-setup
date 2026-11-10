@@ -78,7 +78,7 @@ def main():
     gpg_home=private/'gpg';gpg_home.mkdir(mode=0o700,exist_ok=True)
     encrypted=out/'payload.gpg'
     base=['gpg','--no-symkey-cache','--homedir',str(gpg_home),'--batch','--pinentry-mode','loopback','--passphrase-file',str(key)]
-    subprocess.run(base+['--symmetric','--cipher-algo','AES256','--output',str(encrypted),str(archive)],check=True)
+    subprocess.run(base+['--compress-algo','none','--s2k-count','65011712','--symmetric','--cipher-algo','AES256','--output',str(encrypted),str(archive)],check=True)
     # Verify decryption against the original before deleting intermediate files.
     with archive.open('rb') as f:expected=hashlib.file_digest(f,'sha256').hexdigest()
     p=subprocess.Popen(base+['--decrypt',str(encrypted)],stdout=subprocess.PIPE,stderr=subprocess.DEVNULL)
