@@ -20,7 +20,7 @@ for v in volumes:
     run('sudo','docker','volume','create',v['name'],stdout=subprocess.DEVNULL)
     info=json.loads(run('sudo','docker','volume','inspect',v['name'],capture_output=True,text=True).stdout)[0]
     with (root/v['archive']).open('rb') as f:
-        run('sudo','tar','--acls','--xattrs','-xzf','-','-C',info['Mountpoint'],stdin=f)
+        run('sudo','tar','--numeric-owner','--acls','--xattrs','-xzf','-','-C',info['Mountpoint'],stdin=f)
 if dumps:
     run('sudo','install','-d','-m','700','-o','postgres','-g','postgres',str(pgdata))
     run('sudo','-u','postgres','initdb','-D',str(pgdata),'--auth-local=peer','--auth-host=scram-sha-256')
