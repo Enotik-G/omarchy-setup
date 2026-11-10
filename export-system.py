@@ -6,11 +6,21 @@ os.umask(0o077)
 out=ROOT/'private'/('system-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
 out.mkdir(parents=True,mode=0o700)
 def run(*args,**kw):return subprocess.run(args,check=True,**kw)
+def cluster_running(cluster):
+    if 'running' in cluster:
+        value=cluster['running']
+        if value in (True,1,'1'):return True
+        if value in (False,0,'0'):return False
+        raise ValueError('Неизвестное значение running у PostgreSQL-кластера')
+    status=cluster.get('status','').split(',')[0].strip()
+    if status=='online':return True
+    if status=='down':return False
+    raise ValueError('Не удалось определить состояние PostgreSQL-кластера')
 run('sudo','-v')
 # PostgreSQL: logical backup per Debian cluster. Temporarily start down clusters.
 clusters=json.loads(run('pg_lsclusters','--json',capture_output=True,text=True).stdout)
 for c in clusters:
-    ver=str(c['version']); name=c['cluster'];port=str(c['port']);started=c['status']=='down'
+    ver=str(c['version']); name=c['cluster'];port=str(c['port']);started=not cluster_running(c)
     if started:run('sudo','pg_ctlcluster',ver,name,'start')
     try:
         with (out/f'postgres-{ver}-{name}.sql').open('wb') as f:
