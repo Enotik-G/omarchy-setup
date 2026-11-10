@@ -5,7 +5,7 @@ H=pathlib.Path.home(); ROOT=pathlib.Path(__file__).resolve().parent
 SELECTED=['IdeaProjects','project','hwSkypro','handGOD','esp','Documents','Pictures',
  'Downloads/site','vibe','https:',
  '.testcontainers.properties','.npmrc','.m2/settings-security.xml','.gradle/gradle.properties',
- '.ssh','.gnupg','.gitconfig','.mozilla','.pgadmin','.pki','.m2/settings.xml',
+ '.docker','.aws','.ssh','.gnupg','.gitconfig','.mozilla','.pgadmin','.pki','.m2/settings.xml',
  '.config/JetBrains','.config/nvim','.config/git','.config/gh','.config/pgadmin4',
  '.config/Throne','.config/aseprite','.config/blender','.config/instaloader',
  '.config/instadl','.local/share/keyrings','.local/share/nvim',
