@@ -1,0 +1,7 @@
+/private/
+*.gpg
+*.key
+*.sql
+*.tar*
+*.part-*
+__pycache__/
