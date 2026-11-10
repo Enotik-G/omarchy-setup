@@ -7,5 +7,5 @@ parts=$(realpath -- "$1"); key=$(realpath -- "$2")
 umask 077
 stage=$(mktemp -d)
 trap 'rm -rf -- "$stage"' EXIT
-cat "$parts"/payload.gpg.part-* | gpg --batch --pinentry-mode loopback --passphrase-file "$key" --decrypt > "$stage/payload.tar.gz"
+cat "$parts"/payload.gpg.part-* | gpg --no-symkey-cache --batch --pinentry-mode loopback --passphrase-file "$key" --decrypt > "$stage/payload.tar.gz"
 python3 restore-private.py "$stage/payload.tar.gz"
