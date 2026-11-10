@@ -17,7 +17,9 @@ for c in clusters:
             run('sudo','-u','postgres','pg_dumpall','-p',port,stdout=f)
     finally:
         if started:run('sudo','pg_ctlcluster',ver,name,'stop')
-# Require quiescent containers; never silently stop the user's applications.
+# Ensure Docker is available, then require quiescent containers.
+run('sudo','systemctl','start','docker')
+# Never silently stop the user's applications.
 running=run('sudo','docker','ps','-q',capture_output=True,text=True).stdout.strip()
 if running:raise SystemExit('Есть работающие контейнеры. Останови их штатно, затем повтори экспорт. PostgreSQL уже выгружен в '+str(out))
 containers=[]
