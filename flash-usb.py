@@ -28,7 +28,7 @@ def fetch_text(url):
 def iso_urls(text):
     urls=re.findall(r'https://iso\.omarchy\.org/omarchy-[^"\s<>\\]+\.iso',text)
     return [u for u in dict.fromkeys(urls)
-            if re.fullmatch(r'omarchy-\d+(?:\.\d+)+(?:-\d+)?(?:-x86_64)?\.iso',u.rsplit('/',1)[1])]
+            if re.fullmatch(r'omarchy-\d+(?:\.\d+)+(?:-\d+)?(?:-(?:x86|x86_64|amd64))?\.iso',u.rsplit('/',1)[1])]
 
 def resolve_iso():
     try:
@@ -40,17 +40,24 @@ def resolve_iso():
     if release.get('prerelease') or release.get('draft'):
         raise ValueError('GitHub вернул предварительный релиз вместо стабильного.')
     urls=iso_urls(release.get('body',''))
-    if not urls:raise ValueError('В официальном релизе не найдена ссылка на стабильный x86 ISO.')
-    return urls[0]
+    if urls:return urls[0]
+    # Recent releases contain only release notes. ISO naming was verified against
+    # the actual x86 download link on omarchy.org (4.5.0-x86.iso).
+    version=release.get('tag_name','').removeprefix('v')
+    if not re.fullmatch(r'\d+\.\d+\.\d+',version):
+        raise ValueError('В официальном релизе не найдены ссылка на ISO и стабильная версия.')
+    return 'https://iso.omarchy.org/omarchy-'+version+'-x86.iso'
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--dry-run',action='store_true');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--dry-run',action='store_true');p.add_argument('--iso-url',help='Прямая официальная ссылка на стабильный x86 ISO');a=p.parse_args()
     d,nodes=target();print('Только это устройство:',d['path'],d['model'],d['serial'],flush=True)
     if a.dry_run:
         print('Проверка завершена; ничего не скачано и не записано.');return
     folder=pathlib.Path.home()/'Downloads/omarchy-installer';folder.mkdir(parents=True,exist_ok=True)
     # Use curl consistently, preserving proxy environment and handling HTTP failures.
-    url=resolve_iso();filename=url.rsplit('/',1)[1]
+    url=a.iso_url or resolve_iso()
+    if iso_urls(url)!=[url]:raise ValueError('Разрешён только стабильный x86 ISO с https://iso.omarchy.org/')
+    filename=url.rsplit('/',1)[1]
     checksum=fetch_text(url+'.sha256')
     match=re.search(r'\b[0-9a-fA-F]{64}\b',checksum)
     if not match:raise SystemExit('Официальный SHA256 не найден; запись отменена.')
